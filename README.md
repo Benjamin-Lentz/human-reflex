@@ -1,8 +1,8 @@
 # human-reflex
 Just a Simple project to test human reflex with an LED, a push button and a microcontroller.</br>
 
-Hardware used :</br>
-(Bread boards and wiring not listed below)
+<h2>Hardware used :</h2>
+<p>(Bread boards and wiring not listed below)</p>
 <ul>
   <li>PIC16F876A</li>
   <li>LED</li>
