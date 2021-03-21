@@ -32,12 +32,14 @@
 #define LED PORTBbits.RB4
 
 //GLOBAL VARIABLE declaration
-int counter = 0;
+unsigned int counter = 0;
 //END GLOBAL VARIABLE declaration
 
 //FUNCTION PROTOTYPES declaration
 void UART_Send(int data);
 int UART_Recieve();
+unsigned int getTimeSpent_ms();
+void timeSpentToString(unsigned long time, char tab[4]);
 //END FUNCTION PROTOTYPES declaration
 
 void main(void) 
@@ -61,15 +63,20 @@ void main(void)
     GIE=1;          //Enable Global Interrupt
     PEIE=1;         //Enable the Peripheral Interrupt
     TMR1ON = 1;     //Start Timer1   
-    //END Timer 1 Conf. 
-    
-    
+    //END Timer 1 Conf.
+    char time[4] = {'0','0','0','0'};
     while(1)
     {
         LED = !LED;
-        UART_Send(counter);
+        
+        timeSpentToString(getTimeSpent_ms(), time);
+        
+        for (int i = 0; i < 4; i++) 
+        {
+           UART_Send(time[i]);
+        }
         UART_Send('\n');
-        __delay_ms(500);
+        __delay_ms(1000);
     }
     return;
 }
@@ -80,6 +87,7 @@ void UART_Send(int data)
     TXSTAbits.TXEN = 1;
     TXREG = data;
     while(!PIR1bits.TXIF){}
+    __delay_ms(1);
 }
 
 int UART_Recieve()
@@ -95,10 +103,29 @@ __interrupt() void MY_ISR(void)
 {
     if(TMR1IF==1)
     {
-        counter ++;   // increase the counter by 1
+        counter++;
+
+        
         //put the register to count only 50k values before interrupt
         TMR1H=0b00111100;
         TMR1L=0b10101111;
         TMR1IF=0;       // Clear timer interrupt flag
     } 
+}
+
+unsigned int getTimeSpent_ms()
+{
+    //counter increase every 100 ms and the register every 2us
+    unsigned int i = (((unsigned int)TMR1H << 8) + TMR1L);
+    
+    return (unsigned int)(counter*100 + i/500);
+}
+
+void timeSpentToString(unsigned long time, char tab[4])
+{
+    tab[0] = (char)(48 + (time%10000 - time%1000)/1000);
+    tab[1] = (char)(48 + (time%1000 - time%100)/100);
+    tab[2] = (char)(48 + (time%100 - time %10)/10);
+    tab[3] = (char)(48 + time%10);
+    
 }
