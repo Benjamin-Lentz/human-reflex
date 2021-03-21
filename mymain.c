@@ -29,6 +29,7 @@
 #define LED PORTBbits.RB4
 
 void UART_Send(int data);
+int UART_Recieve();
 
 void main(void) 
 {
@@ -58,4 +59,13 @@ void UART_Send(int data)
     TXSTAbits.TXEN = 1;
     TXREG = data;
     while(!PIR1bits.TXIF){}
+}
+
+int UART_Recieve()
+{
+    RCSTAbits.CREN = 1;
+    while(!PIR1bits.RCIF){}
+    int data = RCREG;
+    RCSTAbits.CREN = 0;
+    return data;
 }
