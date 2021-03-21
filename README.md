@@ -5,7 +5,9 @@ Just a Simple project to test human reflex with an LED, a push button and a micr
 <p>(Bread boards and wiring not listed below)</p>
 <ul>
   <li>PIC16F876A</li>
+  <li>2xPull-UP Resistor (10K or above should be fine)</li>
   <li>LED</li>
+  <li>LED current Resistor (100 or above should be fine)</li>
   <li>Push Button</li>
   <li>Oscillator 16 MHz(Quartz)</li>
   <li>2 capacitors 20 pF</li>
