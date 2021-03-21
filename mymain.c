@@ -21,10 +21,25 @@
 
 // #pragma config statements should precede project file includes.
 // Use project enums instead of #define for ON and OFF.
+
 #define _XTAL_FREQ 16000000
 
 #include <xc.h>
 
-void main(void) {
+#define LED PORTBbits.RB4
+
+void main(void) 
+{
+    TRISB = 0b00000000; //Setting port Bs to output
+	PORTB = 255; //Setting port Bs value to 1
+	ADCON1 = 0b00000110;//Disabling analog inputs
+    
+    
+            
+    while(1)
+    {
+        LED = !LED;
+        __delay_ms(500);
+    }
     return;
 }
