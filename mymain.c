@@ -28,18 +28,34 @@
 
 #define LED PORTBbits.RB4
 
+void UART_Send(int data);
+
 void main(void) 
 {
+    
     TRISB = 0b00000000; //Setting port Bs to output
 	PORTB = 255; //Setting port Bs value to 1
 	ADCON1 = 0b00000110;//Disabling analog inputs
     
+    //UART Conf.
+	TXSTA = 0;
+	RCSTA = 0b10000000;
+	SPBRG = 25;
+    //END UART Conf.
     
-            
     while(1)
     {
         LED = !LED;
+        UART_Send(LED);
         __delay_ms(500);
     }
     return;
+}
+
+void UART_Send(int data)
+{
+    PIR1bits.TXIF = 0;
+    TXSTAbits.TXEN = 1;
+    TXREG = data;
+    while(!PIR1bits.TXIF){}
 }
