@@ -30,6 +30,7 @@
 #include <time.h>
 
 #define LED PORTBbits.RB4
+#define BUTT PORTBbits.RB1
 
 //GLOBAL VARIABLE declaration
 unsigned int counter = 0;
@@ -40,13 +41,15 @@ void UART_Send(int data);
 int UART_Recieve();
 unsigned int getTimeSpent_ms();
 void timeSpentToString(unsigned long time, char tab[4]);
+int randomGenerator(int max_number, int min_number);
 //END FUNCTION PROTOTYPES declaration
 
 void main(void) 
 {
     
     TRISB = 0b00000000; //Setting port Bs to output
-	PORTB = 255; //Setting port Bs value to 1
+    TRISBbits.TRISB1 = 1;//setting the port B1 to input
+	PORTB = 0; //Setting port Bs value to 1
 	ADCON1 = 0b00000110;//Disabling analog inputs
     
     //UART Conf.
@@ -67,16 +70,14 @@ void main(void)
     char time[4] = {'0','0','0','0'};
     while(1)
     {
-        LED = !LED;
-        
-        timeSpentToString(getTimeSpent_ms(), time);
-        
-        for (int i = 0; i < 4; i++) 
+        if(BUTT == 1)
         {
-           UART_Send(time[i]);
+            LED = 1;
         }
-        UART_Send('\n');
-        __delay_ms(1000);
+        else
+        {
+            LED = 0;
+        }
     }
     return;
 }
@@ -128,4 +129,9 @@ void timeSpentToString(unsigned long time, char tab[4])
     tab[2] = (char)(48 + (time%100 - time %10)/10);
     tab[3] = (char)(48 + time%10);
     
+}
+
+int randomGenerator(int max_number, int min_number)
+{
+    return (rand() % (max_number + 1 - min_number) + min_number);
 }
