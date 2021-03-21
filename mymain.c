@@ -25,11 +25,20 @@
 #define _XTAL_FREQ 16000000
 
 #include <xc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define LED PORTBbits.RB4
 
+//GLOBAL VARIABLE declaration
+int counter = 0;
+//END GLOBAL VARIABLE declaration
+
+//FUNCTION PROTOTYPES declaration
 void UART_Send(int data);
 int UART_Recieve();
+//END FUNCTION PROTOTYPES declaration
 
 void main(void) 
 {
@@ -44,10 +53,22 @@ void main(void)
 	SPBRG = 25;
     //END UART Conf.
     
+    //Timer 1 Conf.
+    T1CON = 255;
+    T1CONbits.TMR1CS = 0;
+    
+    TMR1IE=1;       //Enable timer interrupt bit in PIE1 register
+    GIE=1;          //Enable Global Interrupt
+    PEIE=1;         //Enable the Peripheral Interrupt
+    TMR1ON = 1;     //Start Timer1   
+    //END Timer 1 Conf. 
+    
+    
     while(1)
     {
         LED = !LED;
-        UART_Send(LED);
+        UART_Send(counter);
+        UART_Send('\n');
         __delay_ms(500);
     }
     return;
@@ -68,4 +89,16 @@ int UART_Recieve()
     int data = RCREG;
     RCSTAbits.CREN = 0;
     return data;
+}
+
+__interrupt() void MY_ISR(void)
+{
+    if(TMR1IF==1)
+    {
+        counter ++;   // increase the counter by 1
+        //put the register to count only 50k values before interrupt
+        TMR1H=0b00111100;
+        TMR1L=0b10101111;
+        TMR1IF=0;       // Clear timer interrupt flag
+    } 
 }
