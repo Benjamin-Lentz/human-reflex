@@ -13,4 +13,6 @@ Just a Simple project to test human reflex with an LED, a push button and a micr
   <li>2 capacitors 20 pF</li>
   <li>RS232 to USB adapter</li>
 </ul> 
+<h2>Circuit Schematic :</h2>
+<img src="https://github.com/Benjamin-Lentz/human-reflex/blob/main/Schematic.png" alt="Circuit Schematic" width="800" height="500"> 
 
