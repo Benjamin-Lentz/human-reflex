@@ -40,8 +40,10 @@ unsigned int counter = 0;
 void UART_Send(int data);
 int UART_Recieve();
 unsigned int getTimeSpent_ms();
-void timeSpentToString(unsigned long time, char tab[4]);
-int randomGenerator(int max_number, int min_number);
+void timeSpentToString(unsigned int time, char tab[4]);
+int randomGenerator(int min_number, int max_number);
+void sleep_ms(int sleeptime);
+void displayTime(int timeMS, char time[4]);
 //END FUNCTION PROTOTYPES declaration
 
 void main(void) 
@@ -62,22 +64,69 @@ void main(void)
     T1CON = 255;
     T1CONbits.TMR1CS = 0;
     
+    TMR1ON = 0;     //Disable timer
     TMR1IE=1;       //Enable timer interrupt bit in PIE1 register
     GIE=1;          //Enable Global Interrupt
     PEIE=1;         //Enable the Peripheral Interrupt
-    TMR1ON = 1;     //Start Timer1   
+    
+    TMR1H=0b00111100;
+    TMR1L=0b10101111;
     //END Timer 1 Conf.
     char time[4] = {'0','0','0','0'};
+    
+    static __bit isRunning;
+    static __bit hasBegun;
+    
+    isRunning = 1;
+    hasBegun = 0; 
+    
+    LED = 1;
+    
     while(1)
     {
-        if(BUTT == 1)
+        if(hasBegun)
         {
+            int randomNumber = randomGenerator(1, 3000);
+            isRunning = 1;
+            
+            //reset timer 1
+            counter = 0;
+            TMR1H=0b00111100;
+            TMR1L=0b10101111;
+            
+            __delay_ms(3000);
+            sleep_ms(randomNumber);
+            
             LED = 1;
+            TMR1ON = 1;     //Start Timer1 
+            while (isRunning) 
+            {
+                if(BUTT == 0)
+                {
+                    //stop timer
+                    TMR1ON = 0;
+                    //stop loop
+                    isRunning = 0;
+                    //get time
+                    int t = getTimeSpent_ms();
+                    //display time
+                    displayTime(t, time);
+                    
+                    LED = 0;
+                }
+            }
+
+            
         }
         else
         {
-            LED = 0;
+            if(BUTT == 0)
+            {
+                hasBegun = 1;
+                LED = 0;
+            }
         }
+        
     }
     return;
 }
@@ -119,10 +168,10 @@ unsigned int getTimeSpent_ms()
     //counter increase every 100 ms and the register every 2us
     unsigned int i = (((unsigned int)TMR1H << 8) + TMR1L);
     
-    return (unsigned int)(counter*100 + i/500);
+    return (unsigned int)(counter*100 + (i-13535)/500);
 }
 
-void timeSpentToString(unsigned long time, char tab[4])
+void timeSpentToString(unsigned int time, char tab[4])
 {
     tab[0] = (char)(48 + (time%10000 - time%1000)/1000);
     tab[1] = (char)(48 + (time%1000 - time%100)/100);
@@ -131,7 +180,42 @@ void timeSpentToString(unsigned long time, char tab[4])
     
 }
 
-int randomGenerator(int max_number, int min_number)
+int randomGenerator(int min_number, int max_number)
 {
     return (rand() % (max_number + 1 - min_number) + min_number);
+}
+
+void sleep_ms(int sleeptime)
+{
+    int i;
+    for (i = 0; i < sleeptime; i++) 
+    {
+        __delay_ms(1);
+    }
+}
+
+void displayTime(int timeMS, char time[4])
+{
+    UART_Send('R');
+    UART_Send('e');
+    UART_Send('s');
+    UART_Send('u');
+    UART_Send('l');
+    UART_Send('t');
+    UART_Send('a');
+    UART_Send('t');
+    UART_Send(' ');
+    UART_Send(':');
+    UART_Send(' ');
+    
+    timeSpentToString(timeMS, time);
+    
+    for (int i = 0; i < 4; i++) 
+    {
+       UART_Send(time[i]);
+    }
+    UART_Send('m');
+    UART_Send('s');
+    UART_Send('\n');
+    
 }
